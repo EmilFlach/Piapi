@@ -1,0 +1,153 @@
+.item {
+  display: block;
+  box-sizing: border-box;
+  position: relative;
+  padding: 1rem 1rem;
+  margin: 1rem;
+  text-decoration: inherit;
+  border-radius: 2px;
+  white-space: nowrap;
+  box-shadow: $clickable-shadow;
+  &__edit, &__drag, &__remove {
+    @extend .button;
+    position: relative;
+    z-index: 2;
+    padding: 1rem;
+    margin: -1rem;
+  }
+  &__edit, &__drag {
+    display: none;
+  }
+  &__edit, &__remove {
+    float: right;
+  }
+  &__drag {
+    display: none;
+    float: left;
+    cursor: move;
+  }
+  &__input {
+    position: absolute;
+    width: calc(100% - 8px);
+    left: 4px; top: 4px; bottom: 4px;
+    z-index: 1;
+    text-align: center;
+    display: block;
+    color: $opposite-color;
+    background: $primary-color;
+    appearance: none;
+    border: 2px solid $secondary-color;
+    outline: none;
+  }
+  &__toggle {
+    @extend .button;
+    text-align: center;
+    color: $opposite-color;
+    border: 2px solid $opposite-color;
+    transition: all 150ms ease;
+    &::before {
+      position: absolute;
+      content: '';
+      z-index: -1;
+      left: -1px; right: -1px; top: -1px; bottom: -1px;
+      transition: all 150ms ease;
+    }
+    &::before {
+      background-color: $opposite-color;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+    &--on {
+      color: $primary-color;
+      &::before {
+        transform: scaleX(1);
+      }
+      input {
+        background: $opposite-color;
+        color: $primary-color;
+      }
+    }
+    &--disabled {
+      pointer-events: none;
+    }
+    &--mode {
+      color: $primary-color;
+      cursor: default;
+      &::before {
+        transform: scaleX(1);
+      }
+      span {
+        color: $primary-color;
+      }
+    }
+    &--mode--on, &--mode--off {
+      cursor: pointer;
+      span {
+        display: none;
+      }
+    }
+    &--mode--off {
+      color: $opposite-color;
+    }
+    &--mode--on {
+      color: $primary-color;
+      &::before {
+        transform: scaleX(1);
+      }
+    }
+  }
+  &__sensor {
+    color: $opposite-color;
+    text-align: center;
+    box-shadow: none;
+    &::before {
+      position: absolute;
+      content: '';
+      z-index: -1;
+      left: -1px; right: -1px; top: -1px; bottom: -1px;
+      transition: all 150ms ease;
+      background-color: $opposite-color;
+      opacity: 0.1;
+      border-radius: 2px;
+      animation: pulse 300ms 1 ease;
+    }
+    &value {
+      font-weight: bold;
+      margin-left: 0.2rem;
+    }
+  }
+  &__trigger {
+    color: $opposite-color;
+    text-align: center;
+    box-shadow: none;
+    &::before {
+      position: absolute;
+      content: '';
+      z-index: -1;
+      left: -1px; right: -1px; top: -1px; bottom: -1px;
+      transition: all 150ms ease;
+      background-color: $secondary-color;
+      opacity: 0.1;
+      border-radius: 2px;
+      //animation: pulse 300ms 1 ease;
+    }
+  }
+  &--edit {
+    animation: wiggle 100ms 2 linear;
+    cursor: default;
+    span {
+      display: inline;
+    }
+  }
+}
+
+.draggable {
+  transform-origin: left;
+  transition: opacity 100ms ease-in;
+  &--dragging {
+    opacity: 0.6;
+  }
+  &--revert {
+    transition: all 100ms ease-out;
+  }
+}

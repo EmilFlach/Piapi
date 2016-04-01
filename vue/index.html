@@ -1,0 +1,226 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#354458">
+    <meta name="theme-color" content="#354458">
+    <title>Piapi</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/grids-responsive-min.css">
+    <link href="/styles/css/fontello.css" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/styles.css">
+</head>
+<body>
+<div id="app">
+    <div class="pure-g">
+        <div class="pure-u-1 pure-u-md-1-12 pure-u-lg-1-10 pure-u-xl-1-6"></div>
+        <div class="pure-u-1 pure-u-md-5-6 pure-u-lg-4-5 pure-u-xl-2-3">
+            <div class="pure-g">
+
+                <div class="pure-u-2-3 pure-u-sm-3-4 pure-u-lg-5-6">
+                    <h1>piapi</h1>
+                </div>
+
+                <div class="pure-u-1-3 pure-u-sm-1-4 pure-u-lg-1-6">
+                    <div @click="toggleEditMode()" class="item item__toggle" :class="edit ? 'item__toggle--on' : ''" v-show="loggedIn">
+                        Edit
+                    </div>
+                    <div @click="login()" class="item item__toggle" v-show="!loggedIn" style="display: none;">
+                        Login
+                    </div>
+                </div>
+
+                <div class="pure-u-1">
+                    <div class="loading" :class="!ready || disabled ? 'loading--visible' : '' ">
+                        <i class="icon icon-arrows-cw"></i>
+                    </div>
+                </div>
+
+                <div class="pure-u-1 hidden--gracefully hidden"
+                     :class="[edit ? 'pure-u-md-1-2' : '', (edit && ready) ? '' : 'hidden']">
+                    <div class="pure-g">
+                        <p-add-mode :new-mode="newMode" :new-mode-phase="newModePhase" :new-mode-step="newModeStep" :edit="edit"></p-add-mode>
+                        <p-add-trigger :new-trigger="newTrigger" :new-trigger-phase="newTriggerPhase" :new-trigger-step="newTriggerStep" :edit="edit"></p-add-trigger>
+                    </div>
+                </div>
+
+                <div class="pure-u-1 hidden--gracefully hidden" :class="[edit ? 'pure-u-md-1-2' : '', (ready) ? '' : 'hidden']" >
+                    <div class="pure-g">
+                        <p-items :items="modes" type="modes" :edit="edit" :disabled="disabled"></p-items>
+                        <p-items :items="sensors" type="sensors" :edit="edit" :disabled="disabled"></p-items>
+                        <p-items :items="devices" type="devices" :edit="edit" :disabled="disabled"></p-items>
+                        <p-items :items="triggers" type="triggers" :edit="edit" :disabled="disabled"></p-items>
+                    </div>
+                </div>
+            </div>
+            <pre v-show="ready" style="display: none;">
+<!--             {{ $data | json }}-->
+        </pre>
+        </div>
+    </div>
+
+
+</div>
+
+<template id="add-mode-template">
+    <div class="pure-u-1" v-show="edit">
+        <h3>Edit modes</h3>
+    </div>
+    <div class="pure-u-1">
+
+        <div class="add add__dropzone dropzone--mode" v-show="newMode.devices.length == 0"><span>+</span>Drop device to create new mode</div>
+
+        <div class="add dropzone--mode dropzone--hastarget" v-show="newMode.devices.length > 0">
+            <div class="pure-g">
+
+                <div class="pure-u-1">
+                    <input class="add__nameinput" v-model="newMode.name" placeholder="Mode name">
+                </div>
+
+                <div v-for="d in newMode.devices" :class="gridClasses">
+                    <div :class="itemClasses(d)" @click="setModeDeviceState(d, newModePhase)">
+                        {{ getDeviceByID(d.id).name }}
+                        <span class="item__remove" @click="removeNewModeDevice(d)" v-show="newModePhase == 0">
+                            <i class="icon icon-delete"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="pure-u-1"></div>
+
+                <div class="pure-u-1-8">
+                    <div class="add__prev" @click="prevNewModePhase()"><i class="icon icon-back"></i></div>
+                </div>
+                <div class="pure-u-3-4">
+                    <div class="add__step">
+                        <span>{{ newModePhase + 1 }}.</span> {{ newModeStep[newModePhase] }}
+                    </div>
+                </div>
+                <div class="pure-u-1-8">
+                    <div class="add__next" @click="nextNewModePhase()"><i class="icon icon-back"></i></div>
+                </div>
+
+
+                <div class="pure-u-1-6"></div>
+                <div class="pure-u-1-3">
+                    <div class="add__submit" @click="deleteNewMode()">Delete</div>
+                </div>
+                <div class="pure-u-1-3">
+                    <div class="add__submit" @click="saveNewMode()">Save</div>
+                </div>
+                <div class="pure-u-1-6"></div>
+
+                <div class="pure-u-1" v-if="!!modeValidation" >
+                    <div class="add__validation">
+                        {{modeValidation}}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</template>
+
+<template id="add-trigger-template">
+    <div class="pure-u-1" v-show="edit">
+        <h3>Edit triggers</h3>
+    </div>
+    <div class="pure-u-1">
+
+        <div class="add add__dropzone dropzone--trigger" v-show="newTrigger.sensors.length == 0"><span>+</span>Drop sensor to create new trigger</div>
+
+        <div class="add dropzone--trigger dropzone--hastarget" v-show="newTrigger.sensors.length > 0">
+            <div class="pure-g">
+
+                <div class="pure-u-1">
+                    <input class="add__nameinput" v-model="newTrigger.name" placeholder="Trigger name">
+                </div>
+
+                <div :class="gridClasses" v-show="newTriggerPhase == 1">
+                    <div class="item item__toggle item__toggle--mode">
+                        After: <input class="add__inlineinput add__inlineinput--time" v-model="newTrigger.timeAfter" type="time">
+                    </div>
+                </div>
+
+                <div :class="gridClasses" v-show="newTriggerPhase == 1">
+                    <div class="item item__toggle item__toggle--mode">
+                        Before: <input class="add__inlineinput add__inlineinput--time" v-model="newTrigger.timeBefore" type="time">
+                    </div>
+                </div>
+
+                <div v-for="d in newTrigger.sensors" :class="gridClasses" v-show="newTriggerPhase < 2">
+                    <div :class="itemClasses(d)">
+                        {{ getSensorByID(d.id).name }} <input class="add__inlineinput" v-model="d.triggerComperation" v-show="newTriggerPhase == 1"><input class="add__inlineinput" v-model="d.triggerValue" v-show="newTriggerPhase == 1">
+                        <span class="item__remove" @click="removeNewTriggerSensor(d)" v-show="newTriggerPhase == 0">
+                            <i class="icon icon-delete"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div v-for="d in newTrigger.modes" :class="gridClasses" v-show="newTriggerPhase >= 2">
+                    <div :class="itemClasses(d)" @click="toggleTriggerModeState(d)">
+                        {{ getModeByID(d.id).name }}
+                        <span class="item__remove" @click="removeNewTriggerMode(d)" v-show="newTriggerPhase == 2">
+                            <i class="icon icon-delete"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="pure-u-1"></div>
+
+                <div class="pure-u-1-8">
+                    <div class="add__prev" @click="prevNewTriggerPhase()"><i class="icon icon-back"></i></div>
+                </div>
+                <div class="pure-u-3-4">
+                    <div class="add__step">
+                        <span>{{ newTriggerPhase + 1 }}.</span> {{ newTriggerStep[newTriggerPhase] }}
+                    </div>
+                </div>
+                <div class="pure-u-1-8">
+                    <div class="add__next" @click="nextNewTriggerPhase()"><i class="icon icon-back"></i></div>
+                </div>
+
+
+                <div class="pure-u-1-6"></div>
+                <div class="pure-u-1-3">
+                    <div class="add__submit" @click="deleteNewTrigger()">Delete</div>
+                </div>
+                <div class="pure-u-1-3">
+                    <div class="add__submit" @click="saveNewTrigger()">Save</div>
+                </div>
+                <div class="pure-u-1-6"></div>
+
+                <div class="pure-u-1" v-if="!!triggerValidation" >
+                    <div class="add__validation">
+                        {{triggerValidation}}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</template>
+
+<template id="item-template">
+    <div class="pure-u-1" v-show="items.length > 0">
+        <h3>{{ type }}</h3>
+    </div>
+    <div v-for="item in items" :class="gridClasses" data-device-id="{{item.id}}">
+        <div :class="itemClasses(item)" @click="setItemState(item)">
+            <span class="item__drag draggable__handle">
+                <i class="icon icon-move"></i>
+            </span>
+            {{ item.name }} <span class="item__sensorvalue" v-if="item.value">{{ item.value }}</span>
+            <input type="text" v-model="item.name" class="item__input" v-show="item.editable && edit">
+            <span class="item__edit" @click="editItem(item)">
+                <i class="icon icon-edit"></i>
+            </span>
+        </div>
+    </div>
+</template>
+
+<script src="/js/script-dist.js"></script>
+</body>
+</html>

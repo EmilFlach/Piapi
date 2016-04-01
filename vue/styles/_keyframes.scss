@@ -1,0 +1,39 @@
+@-webkit-keyframes spinnerRotate {
+  from {
+    -webkit-transform:rotate(0deg);
+  }
+  to {
+    -webkit-transform:rotate(360deg);
+  }
+}
+
+@-webkit-keyframes wiggle {
+  0% {
+    transform: rotateZ(0deg);
+  }
+  25% {
+    transform: rotateZ(0.5deg);
+  }
+  50% {
+    transform: rotateZ(0deg);
+  }
+  75% {
+    transform: rotateZ(-0.5deg);
+  }
+  100% {
+    transform: rotateZ(0deg);
+  }
+}
+
+@-webkit-keyframes pulse {
+  0% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+

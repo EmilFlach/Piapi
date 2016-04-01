@@ -1,0 +1,6 @@
+
+.icon-edit:before { content: '\e800'; } /* '' */
+.icon-arrows-cw:before { content: '\e801'; } /* '' */
+.icon-move:before { content: '\e802'; } /* '' */
+.icon-delete:before { content: '\e803'; } /* '' */
+.icon-back:before { content: '\e804'; } /* '' */

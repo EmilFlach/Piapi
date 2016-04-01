@@ -1,0 +1,98 @@
+$primary-color: #354458;
+$secondary-color: #EB7260;
+$opposite-color: #fafafa;
+$opposite-color-50: rgba(250,250,250,0.5);
+$clickable-shadow: 0 1px 3px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.24);
+
+body {
+  background-color: $primary-color;
+  color: $opposite-color;
+  font-size: 16px;
+}
+
+h1 {
+  padding: 0 1rem;
+  margin: 1.5rem 0;
+}
+
+h3 {
+  margin-bottom: 0.5rem;
+  margin-top: 2rem;
+  text-align: center;
+  color: $opposite-color-50;
+  text-transform: capitalize;
+}
+
+.button {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+  -khtml-user-select: none;    /* Konqueror */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* IE/Edge */
+  user-select: none;
+  cursor: pointer;
+}
+
+@import 'keyframes';
+@import 'item';
+@import 'add';
+@import 'sweetalert2';
+
+.loading {
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  top: 1.7rem;
+  text-align: center;
+  opacity: 0;
+  font-size: 2rem;
+  transition: all 200ms ease;
+  i {
+    &:before {
+      animation: spinnerRotate 1s infinite linear both;
+    }
+  }
+  &--visible {
+    opacity: 0.5;
+  }
+
+}
+
+.hidden {
+  opacity: 0;
+  &--gracefully {
+    animation: toVisible 200ms ease-out;
+  }
+}
+
+.swal {
+  &__confirm, &__cancel {
+    @extend .button;
+    border-radius: 2px;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem;
+    border: 2px solid $primary-color;
+  }
+  &__confirm {
+    background-color: $primary-color;
+    color: $opposite-color;
+  }
+  &__cancel {
+    background-color: transparent;
+    color: $primary-color;
+  }
+  &__input {
+    margin: 0.5rem 0;
+    padding: 0.6rem 0;
+    background: transparent;
+    appearance: none;
+    outline: none;
+    border: none;
+    color: $primary-color;
+    border-bottom: 2px solid $primary-color;
+    &::placeholder {
+      color: $primary-color;
+    }
+  }
+}
