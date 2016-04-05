@@ -65,7 +65,9 @@ function sendTik() {
 function deviceCallback(snap, prevChildKey) {
     if (!!snap.val()) {
         var device = snap.val();
-        writeData += device.type + ',' + device.id + ',' + device.state + ',;';
+        if(device.type == 0) {
+            writeData += device.type + ',' + device.id + ',' + device.state + ',;';
+        }
     }
 }
 

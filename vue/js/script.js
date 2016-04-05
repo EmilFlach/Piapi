@@ -21,4 +21,5 @@
  * External interaction libraries
  */
 //@prepros-append interactions/dragdrop.js
+//@prepros-append interactions/slider.js
 //@prepros-append vendor/sweetalert.js

@@ -132,6 +132,62 @@
       //animation: pulse 300ms 1 ease;
     }
   }
+  &__slider {
+    margin: 3rem 1rem 1rem;
+    background-color: $opposite-color-10;
+    &::before {
+      position: absolute;
+      content: '';
+      z-index: -1;
+      left: 0; right: 0; top: 0; bottom: 0;
+      //transition: all 150ms ease;
+      background-color: $opposite-color;
+      transform-origin: left;
+      transform: scaleX(0);
+      border-bottom-left-radius: 2px;
+    }
+    @for $i from 0 through 100 {
+      &--#{$i} {
+        &::before {
+          transform: scaleX(($i / 100));
+        }
+        .item__sliderhandle {
+          transform: translateX(($i * 1%) - 4%) scaleX(0.08);
+        }
+      }
+    }
+  }
+  &__sliderhandle {
+    display: block;
+    position: absolute;
+    width: 100%;
+    left:0; top:0; bottom:0;
+    background-color: $secondary-color;
+    transform-origin: left;
+    transform: translateX(-5%) scaleX(0.1);
+    border-radius: 20px;
+    box-shadow: 5px 0 20px rgba(0,0,0,0.3);
+  }
+  &__sliderdescription {
+    position: absolute;
+    left: 0;
+    width: calc(50% - 3rem);
+    text-align: center;
+    bottom: 100%;
+    color: $primary-color;
+    background-color: $opposite-color;
+    padding: 0.5rem 1rem;
+    border-top-right-radius: 2px;
+    border-top-left-radius: 2px;
+    input {
+      width: 2rem;
+      font-weight: bold;
+      outline: none;
+      border: none;
+      background-color: transparent;
+      text-align: center;
+    }
+  }
   &--edit {
     animation: wiggle 100ms 2 linear;
     cursor: default;

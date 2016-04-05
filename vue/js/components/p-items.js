@@ -4,22 +4,7 @@ Vue.component('p-items', {
 
     computed: {
         // Compute the classes required, mostly dependent on the edit variable
-        gridClasses: function () {
-            return {
-                'pure-u-1' : this.edit,
-                'pure-u-lg-1-2' : this.edit,
-                'pure-u-md-1' : this.edit,
-                'pure-u-sm-1-2' : this.edit,
-                'pure-u-1-2' : !this.edit,
-                'pure-u-md-1-3' : !this.edit,
-                'pure-u-lg-1-4' : !this.edit,
-                'draggable' : true,
-                'draggable--mode' : this.type == 'modes',
-                'draggable--device' : this.type == 'devices',
-                'draggable--sensor' : this.type == 'sensors',
-                'draggable--trigger' : this.type == 'sensors' || this.type == 'modes'
-            }
-        }
+
     },
     methods: {
 
@@ -34,6 +19,35 @@ Vue.component('p-items', {
                 'item__sensor' : this.type == 'sensors',
                 'item__trigger' : this.type == 'triggers'
             }
+        },
+
+        gridClasses: function (item) {
+            if(item.type == 1 && !this.edit) {
+                return {
+                    'pure-u-1' : true,
+                    'pure-u-lg-1-2': true
+                }
+            } else {
+                return {
+                    'pure-u-1' : this.edit,
+                    'pure-u-lg-1-2' : this.edit,
+                    'pure-u-md-1' : this.edit,
+                    'pure-u-sm-1-2' : this.edit,
+                    'pure-u-1-2' : !this.edit,
+                    'pure-u-md-1-3' : !this.edit,
+                    'pure-u-lg-1-4' : !this.edit,
+                    'draggable' : true,
+                    'draggable--mode' : this.type == 'modes',
+                    'draggable--device' : this.type == 'devices',
+                    'draggable--sensor' : this.type == 'sensors',
+                    'draggable--trigger' : this.type == 'sensors' || this.type == 'modes'
+                }
+            }
+        },
+
+
+        sliderClass: function(item) {
+            return 'item__slider--' + item.state;
         },
 
 
@@ -95,7 +109,7 @@ function itemState(item) {
         var length = gds.length;
         for (var i = 0; i < length; i++) {
             var d = getDeviceByID(gds[i].id);
-            if(d.state !== gds[i].stateOn) {
+            if(d.state != gds[i].stateOn) {
                 output = false;
                 break;
             }

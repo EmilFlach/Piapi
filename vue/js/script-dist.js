@@ -21,6 +21,7 @@
  * External interaction libraries
  */
 //@prepros-append interactions/dragdrop.js
+//@prepros-append interactions/slider.js
 //@prepros-append vendor/sweetalert.js
 ;/*! @license Firebase v2.4.1
     License: https://www.firebase.com/terms/terms-of-service.html */
@@ -10016,22 +10017,7 @@ Vue.component('p-items', {
 
     computed: {
         // Compute the classes required, mostly dependent on the edit variable
-        gridClasses: function () {
-            return {
-                'pure-u-1' : this.edit,
-                'pure-u-lg-1-2' : this.edit,
-                'pure-u-md-1' : this.edit,
-                'pure-u-sm-1-2' : this.edit,
-                'pure-u-1-2' : !this.edit,
-                'pure-u-md-1-3' : !this.edit,
-                'pure-u-lg-1-4' : !this.edit,
-                'draggable' : true,
-                'draggable--mode' : this.type == 'modes',
-                'draggable--device' : this.type == 'devices',
-                'draggable--sensor' : this.type == 'sensors',
-                'draggable--trigger' : this.type == 'sensors' || this.type == 'modes'
-            }
-        }
+
     },
     methods: {
 
@@ -10046,6 +10032,35 @@ Vue.component('p-items', {
                 'item__sensor' : this.type == 'sensors',
                 'item__trigger' : this.type == 'triggers'
             }
+        },
+
+        gridClasses: function (item) {
+            if(item.type == 1 && !this.edit) {
+                return {
+                    'pure-u-1' : true,
+                    'pure-u-lg-1-2': true
+                }
+            } else {
+                return {
+                    'pure-u-1' : this.edit,
+                    'pure-u-lg-1-2' : this.edit,
+                    'pure-u-md-1' : this.edit,
+                    'pure-u-sm-1-2' : this.edit,
+                    'pure-u-1-2' : !this.edit,
+                    'pure-u-md-1-3' : !this.edit,
+                    'pure-u-lg-1-4' : !this.edit,
+                    'draggable' : true,
+                    'draggable--mode' : this.type == 'modes',
+                    'draggable--device' : this.type == 'devices',
+                    'draggable--sensor' : this.type == 'sensors',
+                    'draggable--trigger' : this.type == 'sensors' || this.type == 'modes'
+                }
+            }
+        },
+
+
+        sliderClass: function(item) {
+            return 'item__slider--' + item.state;
         },
 
 
@@ -10107,7 +10122,7 @@ function itemState(item) {
         var length = gds.length;
         for (var i = 0; i < length; i++) {
             var d = getDeviceByID(gds[i].id);
-            if(d.state !== gds[i].stateOn) {
+            if(d.state != gds[i].stateOn) {
                 output = false;
                 break;
             }
@@ -10417,6 +10432,11 @@ function deleteNewTrigger() {
 
 ;var baseURL = "https://burning-torch-8945.firebaseio.com/";
 var fb = new Firebase(baseURL);
+var deviceRef = new Firebase(baseURL + '/devices');
+var modesRef = new Firebase(baseURL + '/modes');
+var triggersRef = new Firebase(baseURL + '/triggers');
+var sensorsRef = new Firebase(baseURL + '/sensors');
+
 
 Vue.config.debug = true;
 window.vue = new Vue({
@@ -10424,7 +10444,10 @@ window.vue = new Vue({
     data: {
 
         // Global data
-        ready: false,
+        devicesReady: false,
+        modesReady: false,
+        triggersReady: false,
+        sensorsReady: false,
         edit: false,
         disabled: false,
         loggedIn: false,
@@ -10467,13 +10490,18 @@ window.vue = new Vue({
         triggerValidation: ''
 
     },
+    computed: {
+      ready: function () {
+          return this.devicesReady && this.modesReady && this.triggersReady && this.sensorsReady;
+      }
+    },
     methods: {
         toggleEditMode: function () {
             this.edit = !this.edit;
             if(this.edit) {
-                fb.off("value", initializeData);
+                decoupleData();
             } else {
-                fb.on("value", initializeData);
+                initializeData();
             }
         },
         login: function () {
@@ -10481,7 +10509,7 @@ window.vue = new Vue({
         }
     },
     created: function() {
-        fb.on("value", initializeData);
+        initializeData()
     },
     ready: function () {
         this.loggedIn = (!!fb.getAuth());
@@ -10560,26 +10588,48 @@ function getModeByID(id) {
     return mode;
 }
 
+function initializeData() {
+    deviceRef.on("value", devicesCallback);
+    modesRef.on("value", modesCallback);
+    triggersRef.on("value", triggersCallback);
+    sensorsRef.on("value", sensorsCallback);
+}
+
+function decoupleData() {
+    deviceRef.off("value", devicesCallback);
+    modesRef.off("value", modesCallback);
+    triggersRef.off("value", triggersCallback);
+    sensorsRef.off("value", sensorsCallback);
+}
 
 
-function initializeData(snap) {
-    var v = window.vue;
-    if(v.version < snap.val().version) {
-        if (!!snap.val().devices) {
-            v.devices = snap.val().devices;
-        }
-        if (!!snap.val().modes) {
-            v.modes = snap.val().modes;
-        }
-        if (!!snap.val().triggers) {
-            v.triggers = snap.val().triggers;
-        }
-        v.version = snap.val().version;
-        v.ready = true;
+function devicesCallback(snap) {
+    if (!!snap.val()) {
+        vue.devices = snap.val();
+        initSliders();
     }
-    if(!!snap.val().sensors) {
-        v.sensors = snap.val().sensors;
+    vue.devicesReady = true;
+}
+
+function modesCallback(snap) {
+    if (!!snap.val()) {
+        vue.modes = snap.val();
     }
+    vue.modesReady = true;
+}
+
+function triggersCallback(snap) {
+    if (!!snap.val()) {
+        vue.triggers = snap.val();
+    }
+    vue.triggersReady = true;
+}
+
+function sensorsCallback(snap) {
+    if (!!snap.val()) {
+        vue.sensors = snap.val();
+    }
+    vue.sensorsReady = true;
 }
 
 function loginPopUp() {
@@ -10831,7 +10881,7 @@ interact('.dropzone--trigger').dropzone({
                 item = window.vue.modes[window.currentDraggable];
                 newModeItems = window.vue.newTrigger.modes;
             }
-                var exists = false,
+            var exists = false,
                 length = newModeItems.length;
 
             for (i = 0; i < length; i++) {
@@ -10889,6 +10939,88 @@ function dragMoveListener (event, isZero) {
     target.setAttribute('data-x', x);
     target.setAttribute('data-y', y);
 }
+
+
+
+;window.currentSlider = false;
+window.sliders = [];
+
+interact('.item__sliderhandle')
+    .draggable({
+        //restrict: {
+        //    restriction: "parent",
+        //    endOnly: false,
+        //    elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+        //},
+        onstart: function (event) {
+            window.currentSlider = event.target.parentElement.parentElement.getAttribute('data-device-id');
+                var width = event.target.parentElement.offsetWidth;
+                var percentage = parseInt(event.target.parentElement.classList[2].substring('item__slider--'.length)) / 100;
+                window.sliders[window.currentSlider] = percentage * width;
+        },
+        onmove: function(event) {
+            dragSliderListener(event, false);
+        },
+        onend: function (event) {
+            window.currentSlider = false;
+            updateState();
+        }
+    });
+
+function initSliders() {
+    setTimeout(function() {
+        var itemSliders = document.getElementsByClassName('item__slider');
+        for(var i = 0; i < itemSliders.length; i++) {
+            itemSliders[i].addEventListener("click", clickSlider, false);
+        }
+    }, 100);
+}
+
+
+function dragSliderListener(event) {
+    var target = event.target.parentElement,
+        x = (window.sliders[window.currentSlider] || 0) + event.dx,
+        percentage = Math.round((x / target.offsetWidth) * 100);
+
+    if(percentage < 0) {
+        percentage = 0;
+    } else if(percentage > 100) {
+        percentage = 100;
+    }
+
+    if(x < 0) {
+        x = 0;
+    } else if(x > this.offsetWidth) {
+        x = this.offsetWidth;
+    }
+
+    window.vue.devices[window.currentSlider].state = percentage;
+    window.sliders[window.currentSlider] = x;
+}
+
+function clickSlider(e) {
+    var x = e.clientX - this.getBoundingClientRect().left,
+        percentage = Math.round((x / this.offsetWidth) * 100),
+        deviceID = this.parentElement.getAttribute('data-device-id');
+
+    if(percentage < 0) {
+        percentage = 0;
+    } else if(percentage > 100) {
+        percentage = 100;
+    }
+
+    if(x < 0) {
+        x = 0;
+    } else if(x > this.offsetWidth) {
+        x = this.offsetWidth;
+    }
+
+    window.vue.devices[deviceID].state = percentage;
+    window.sliders[deviceID] = x;
+    updateState();
+}
+
+
 ;// SweetAlert2
 // github.com/limonte/sweetalert2
 

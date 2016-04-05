@@ -1,6 +1,21 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="57x57" href="/styles/favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/styles/favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/styles/favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/styles/favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/styles/favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/styles/favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/styles/favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/styles/favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/styles/favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/styles/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/styles/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/styles/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/styles/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/styles/favicon/manifest.json">
+    <meta name="msapplication-TileImage" content="/styles/favicon/ms-icon-144x144.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-TileColor" content="#354458">
     <meta name="theme-color" content="#354458">
@@ -78,8 +93,15 @@
                 </div>
 
                 <div v-for="d in newMode.devices" :class="gridClasses">
-                    <div :class="itemClasses(d)" @click="setModeDeviceState(d, newModePhase)">
+                    <div :class="itemClasses(d)" @click="setModeDeviceState(d, newModePhase)" v-if="d.type != 1">
                         {{ getDeviceByID(d.id).name }}
+                        <span class="item__remove" @click="removeNewModeDevice(d)" v-show="newModePhase == 0">
+                            <i class="icon icon-delete"></i>
+                        </span>
+                    </div>
+
+                    <div :class="itemClasses(d)" v-if="d.type == 1">
+                        {{ getDeviceByID(d.id).name }} <input class="add__inlineinput" v-model="d.stateOn" v-show="newModePhase == 1"><input class="add__inlineinput" v-model="d.stateOff" v-show="newModePhase == 2">
                         <span class="item__remove" @click="removeNewModeDevice(d)" v-show="newModePhase == 0">
                             <i class="icon icon-delete"></i>
                         </span>
@@ -207,17 +229,26 @@
     <div class="pure-u-1" v-show="items.length > 0">
         <h3>{{ type }}</h3>
     </div>
-    <div v-for="item in items" :class="gridClasses" data-device-id="{{item.id}}">
-        <div :class="itemClasses(item)" @click="setItemState(item)">
+    <div v-for="item in items" :class="gridClasses(item)" data-device-id="{{item.id}}">
+        <div :class="itemClasses(item)" @click="setItemState(item)" v-if="(item.type == 1 && edit) || item.type != 1">
             <span class="item__drag draggable__handle">
                 <i class="icon icon-move"></i>
             </span>
-            {{ item.name }} <span class="item__sensorvalue" v-if="item.value">{{ item.value }}</span>
+            {{ item.name }} <span class="item__sensorvalue" v-if="item.value || item.type == 1">{{ item.value ? item.value : item.state }}</span>
             <input type="text" v-model="item.name" class="item__input" v-show="item.editable && edit">
             <span class="item__edit" @click="editItem(item)">
                 <i class="icon icon-edit"></i>
             </span>
         </div>
+
+        <div class="item item__slider" :class="sliderClass(item)" v-if="item.type == 1 && !edit">
+            <div class="item__sliderdescription">
+                {{item.name}}<input class="item__slidervalue" v-model="item.state" readonly>
+            </div>
+            <span class="item__sliderhandle">
+            </span>
+        </div>
+
     </div>
 </template>
 

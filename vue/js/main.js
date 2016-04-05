@@ -1,5 +1,10 @@
 var baseURL = "https://burning-torch-8945.firebaseio.com/";
 var fb = new Firebase(baseURL);
+var deviceRef = new Firebase(baseURL + '/devices');
+var modesRef = new Firebase(baseURL + '/modes');
+var triggersRef = new Firebase(baseURL + '/triggers');
+var sensorsRef = new Firebase(baseURL + '/sensors');
+
 
 Vue.config.debug = true;
 window.vue = new Vue({
@@ -7,7 +12,10 @@ window.vue = new Vue({
     data: {
 
         // Global data
-        ready: false,
+        devicesReady: false,
+        modesReady: false,
+        triggersReady: false,
+        sensorsReady: false,
         edit: false,
         disabled: false,
         loggedIn: false,
@@ -50,13 +58,18 @@ window.vue = new Vue({
         triggerValidation: ''
 
     },
+    computed: {
+      ready: function () {
+          return this.devicesReady && this.modesReady && this.triggersReady && this.sensorsReady;
+      }
+    },
     methods: {
         toggleEditMode: function () {
             this.edit = !this.edit;
             if(this.edit) {
-                fb.off("value", initializeData);
+                decoupleData();
             } else {
-                fb.on("value", initializeData);
+                initializeData();
             }
         },
         login: function () {
@@ -64,7 +77,7 @@ window.vue = new Vue({
         }
     },
     created: function() {
-        fb.on("value", initializeData);
+        initializeData()
     },
     ready: function () {
         this.loggedIn = (!!fb.getAuth());
@@ -143,26 +156,48 @@ function getModeByID(id) {
     return mode;
 }
 
+function initializeData() {
+    deviceRef.on("value", devicesCallback);
+    modesRef.on("value", modesCallback);
+    triggersRef.on("value", triggersCallback);
+    sensorsRef.on("value", sensorsCallback);
+}
+
+function decoupleData() {
+    deviceRef.off("value", devicesCallback);
+    modesRef.off("value", modesCallback);
+    triggersRef.off("value", triggersCallback);
+    sensorsRef.off("value", sensorsCallback);
+}
 
 
-function initializeData(snap) {
-    var v = window.vue;
-    if(v.version < snap.val().version) {
-        if (!!snap.val().devices) {
-            v.devices = snap.val().devices;
-        }
-        if (!!snap.val().modes) {
-            v.modes = snap.val().modes;
-        }
-        if (!!snap.val().triggers) {
-            v.triggers = snap.val().triggers;
-        }
-        v.version = snap.val().version;
-        v.ready = true;
+function devicesCallback(snap) {
+    if (!!snap.val()) {
+        vue.devices = snap.val();
+        initSliders();
     }
-    if(!!snap.val().sensors) {
-        v.sensors = snap.val().sensors;
+    vue.devicesReady = true;
+}
+
+function modesCallback(snap) {
+    if (!!snap.val()) {
+        vue.modes = snap.val();
     }
+    vue.modesReady = true;
+}
+
+function triggersCallback(snap) {
+    if (!!snap.val()) {
+        vue.triggers = snap.val();
+    }
+    vue.triggersReady = true;
+}
+
+function sensorsCallback(snap) {
+    if (!!snap.val()) {
+        vue.sensors = snap.val();
+    }
+    vue.sensorsReady = true;
 }
 
 function loginPopUp() {

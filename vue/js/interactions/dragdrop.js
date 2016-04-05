@@ -82,7 +82,7 @@ interact('.dropzone--trigger').dropzone({
                 item = window.vue.modes[window.currentDraggable];
                 newModeItems = window.vue.newTrigger.modes;
             }
-                var exists = false,
+            var exists = false,
                 length = newModeItems.length;
 
             for (i = 0; i < length; i++) {
@@ -140,3 +140,5 @@ function dragMoveListener (event, isZero) {
     target.setAttribute('data-x', x);
     target.setAttribute('data-y', y);
 }
+
+
