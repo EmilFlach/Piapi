@@ -87,6 +87,7 @@ window.vue = new Vue({
 function updateState() {
     var v = window.vue;
     if(v.loggedIn) {
+        decoupleData();
         v.disabled = true;
         v.version = Date.now();
         fb.update({
@@ -106,6 +107,7 @@ function updateState() {
                     allowOutsideClick: true
                 });
             } else {
+                initializeData();
                 v.disabled = false;
             }
         });

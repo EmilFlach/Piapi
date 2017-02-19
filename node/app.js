@@ -2,6 +2,8 @@ var net = require('net');
 var fs = require('fs');
 var util = require('util');
 var Firebase = require('firebase');
+var express = require('express');
+var app = express();
 var CronJob = require('cron').CronJob;
 
 var baseURL = "https://burning-torch-8945.firebaseio.com";
@@ -116,6 +118,21 @@ function executeTriggered(triggeredTriggers) {
         version: Date.now()
     });
 }
+
+app.get('/', function (req, res) {
+    res.send("ok!")
+});
+
+app.get('/sensors/:sensorId/value/:sensorValue', function (req, res) {
+    var sensorRef = new Firebase(baseURL + '/sensors/' + req.params.sensorId);
+    sensorRef.update({ value: req.params.sensorValue });
+    res.send("ok!: " + req.params.sensorId + " ," + req.params.sensorValue);
+});
+
+app.listen(3000, function () {
+    console.log('Node listening on port 3000!')
+});
+
 
 function getTriggered() {
     var triggeredTriggers = [];
